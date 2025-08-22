@@ -2,12 +2,10 @@
 
 An interactive web application built with Streamlit to analyze and visualize insights from the Stack Overflow Developer Survey 2023. This tool allows users to explore trends in technology, career development, and global developer demographics.
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://your-streamlit-app-url.streamlit.app) 
-<!-- Replace the URL above with your deployed Streamlit app URL -->
+# [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://your-streamlit-app-url.streamlit.app)  
 
-![App Screenshot](https://i.imgur.com/your-screenshot-url.png)
-<!-- Optional: Add a screenshot of your app. You can upload an image to a site like imgur.com and link it here. -->
-
+# ![App Screenshot](https://i.imgur.com/your-screenshot-url.png)
+ 
 ## 🚀 Features
 
 This application provides a multi-page interface for a comprehensive data exploration experience:
@@ -27,18 +25,4 @@ This application provides a multi-page interface for a comprehensive data explor
 -   **Plotly Express:** For creating rich, interactive, and beautiful data visualizations.
 -   **pycountry-convert:** A utility library to convert country names to ISO codes for geospatial mapping.
 
-## ⚙️ Setup and Installation
-
-To run this application locally, please follow these steps.
-
-### Prerequisites
-
--   Python 3.8 - 3.11
--   pip (Python package installer)
-
-### 1. Clone the Repository
-
-Clone this repository to your local machine:
-```bash
-git clone https://github.com/your-username/it-data-explorer.git
-cd it-data-explorer
+ 
