@@ -18,7 +18,9 @@ st.set_page_config(
 def load_data(file_path):
     """Loads and cleans the Stack Overflow 2023 survey data."""
     try:
-        df = pd.read_csv(file_path)
+        # FIX 1: Use low_memory=False for robust type detection in large, mixed-type files.
+        df = pd.read_csv(file_path, low_memory=False)
+        
         # Rename columns for consistency and clean data
         df = df.rename(columns={'YearsCodePro': 'YearsCode'})
         df['ConvertedCompYearly'] = pd.to_numeric(df['ConvertedCompYearly'], errors='coerce')
@@ -26,7 +28,8 @@ def load_data(file_path):
         df = df.dropna(subset=['ConvertedCompYearly', 'YearsCode', 'Country'])
         return df
     except Exception as e:
-        st.error(f"Error loading data: {e}")
+        # The error will be displayed in the main app logic.
+        st.error(f"Error processing the data: {e}")
         return None
 
 def get_iso_alpha3(country_name):
@@ -37,7 +40,6 @@ def get_iso_alpha3(country_name):
         return None
 
 # --- SESSION STATE INITIALIZATION ---
-# Use session state to store the dataframe so it persists across page navigations
 if 'df' not in st.session_state:
     st.session_state.df = None
 
@@ -51,12 +53,18 @@ with st.sidebar:
     
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
     if uploaded_file is not None:
-        st.session_state.df = load_data(uploaded_file)
-        st.success("File uploaded successfully!")
-    elif st.button("Load Sample Developer Data"):
+        # FIX 2: Corrected UI logic to avoid contradictory messages.
+        df = load_data(uploaded_file)
+        if df is not None:
+            st.session_state.df = df
+            st.success("File processed successfully!")
+
+    if st.button("Load Sample Developer Data"):
         sample_data_path = Path(__file__).parent / "developer_survey_2023.csv"
-        st.session_state.df = load_data(sample_data_path)
-        st.success("Sample data loaded!")
+        df = load_data(sample_data_path)
+        if df is not None:
+            st.session_state.df = df
+            st.success("Sample data loaded successfully!")
 
     if st.session_state.df is not None:
         st.markdown("---")
@@ -66,29 +74,18 @@ with st.sidebar:
     
     st.markdown("---")
     st.header("2. Choose Analysis Page")
-    # Navigation radio buttons
     page = st.radio("Go to", ["Home", "Data Explorer", "Technology Analysis", "Career Analysis", "Global Insights"])
 
 # --- MAIN PAGE CONTENT ---
-
 if page == "Home":
     st.header("Welcome!")
     st.markdown("""
     This application is an interactive tool to analyze and visualize insights from the **Stack Overflow Developer Survey 2023**.
-    
-    **How to use this app:**
-    1.  **Load Data:** Use the sidebar to load the sample survey data.
-    2.  **Navigate:** Select an analysis page from the sidebar to begin exploring.
-    
-    **Available Pages:**
-    - **Data Explorer:** View and filter the raw dataset.
-    - **Technology Analysis:** Discover the most popular programming languages.
-    - **Career Analysis:** Explore the link between experience and compensation.
-    - **Global Insights:** Visualize developer salaries and demographics on a world map.
+    **How to use:** Load data from the sidebar to activate the analysis pages.
     """)
 
 elif st.session_state.df is None:
-    st.warning("Please load the sample data in the sidebar to get started.")
+    st.warning("Please load data in the sidebar to get started.")
 
 elif page == "Data Explorer":
     st.title("📊 Data Explorer")
@@ -96,12 +93,11 @@ elif page == "Data Explorer":
     
     df = st.session_state.df.copy()
     
-    # Dynamic filters
     filter_container = st.container()
     with filter_container:
         st.markdown("#### Filter Data")
         cols = st.columns(4)
-        for i, col in enumerate(df.columns):
+        for i, col in enumerate(df.columns[:12]): # Limit filters to first 12 columns for performance
             with cols[i % 4]:
                 if is_numeric_dtype(df[col]):
                     min_val, max_val = float(df[col].min()), float(df[col].max())
