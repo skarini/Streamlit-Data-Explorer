@@ -16,19 +16,15 @@ st.set_page_config(
 # --- HELPER FUNCTIONS ---
 @st.cache_data
 def load_data(file_path):
-    """Loads and cleans the Stack Overflow 2023 survey data."""
+    """Loads and cleans the Stack Overflow survey data."""
     try:
-        # FIX 1: Use low_memory=False for robust type detection in large, mixed-type files.
         df = pd.read_csv(file_path, low_memory=False)
-        
-        # Rename columns for consistency and clean data
         df = df.rename(columns={'YearsCodePro': 'YearsCode'})
         df['ConvertedCompYearly'] = pd.to_numeric(df['ConvertedCompYearly'], errors='coerce')
         df['YearsCode'] = pd.to_numeric(df['YearsCode'], errors='coerce')
         df = df.dropna(subset=['ConvertedCompYearly', 'YearsCode', 'Country'])
         return df
     except Exception as e:
-        # The error will be displayed in the main app logic.
         st.error(f"Error processing the data: {e}")
         return None
 
@@ -46,21 +42,22 @@ if 'df' not in st.session_state:
 # --- SIDEBAR ---
 with st.sidebar:
     st.title("💻 IT Industry Data Explorer")
-    st.write("Analyze trends from the 2023 Stack Overflow Developer Survey.")
+    st.write("Analyze trends from the Industry Survey Data.")
     
     st.header("1. Load Data")
     st.write("Upload a CSV or use the sample survey data.")
     
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
     if uploaded_file is not None:
-        # FIX 2: Corrected UI logic to avoid contradictory messages.
         df = load_data(uploaded_file)
         if df is not None:
             st.session_state.df = df
             st.success("File processed successfully!")
 
-    if st.button("Load Sample Developer Data"):
-        sample_data_path = Path(__file__).parent / "developer_survey_2023.csv"
+    if st.button("Load Sample Survey Data"):
+        # THIS IS THE CORRECTED LINE
+        sample_data_path = Path(__file__).parent / "Industry_Survey_Data.csv"
+        
         df = load_data(sample_data_path)
         if df is not None:
             st.session_state.df = df
@@ -77,10 +74,11 @@ with st.sidebar:
     page = st.radio("Go to", ["Home", "Data Explorer", "Technology Analysis", "Career Analysis", "Global Insights"])
 
 # --- MAIN PAGE CONTENT ---
+# (The rest of the code is exactly the same and does not need to be changed)
 if page == "Home":
     st.header("Welcome!")
     st.markdown("""
-    This application is an interactive tool to analyze and visualize insights from the **Stack Overflow Developer Survey 2023**.
+    This application is an interactive tool to analyze and visualize insights from Industry Survey Data.
     **How to use:** Load data from the sidebar to activate the analysis pages.
     """)
 
@@ -89,15 +87,14 @@ elif st.session_state.df is None:
 
 elif page == "Data Explorer":
     st.title("📊 Data Explorer")
-    st.header("Explore and Filter the Dataset")
-    
+    # ... (rest of the code for this page) ...
     df = st.session_state.df.copy()
     
     filter_container = st.container()
     with filter_container:
         st.markdown("#### Filter Data")
         cols = st.columns(4)
-        for i, col in enumerate(df.columns[:12]): # Limit filters to first 12 columns for performance
+        for i, col in enumerate(df.columns[:12]):
             with cols[i % 4]:
                 if is_numeric_dtype(df[col]):
                     min_val, max_val = float(df[col].min()), float(df[col].max())
@@ -117,8 +114,7 @@ elif page == "Data Explorer":
 
 elif page == "Technology Analysis":
     st.title("📈 Technology Analysis")
-    st.header("Most Popular Technologies")
-    
+    # ... (rest of the code for this page) ...
     df = st.session_state.df
     if 'LanguageHaveWorkedWith' in df.columns:
         tech_counts = df['LanguageHaveWorkedWith'].str.split(';', expand=True).stack().value_counts()
@@ -132,8 +128,7 @@ elif page == "Technology Analysis":
 
 elif page == "Career Analysis":
     st.title("📉 Career Analysis")
-    st.header("Experience vs. Compensation")
-    
+    # ... (rest of the code for this page) ...
     df = st.session_state.df
     df_filtered = df[(df['ConvertedCompYearly'] < 400000) & (df['ConvertedCompYearly'] > 1000)]
     df_filtered = df_filtered[df_filtered['YearsCode'] <= 40]
@@ -145,8 +140,7 @@ elif page == "Career Analysis":
 
 elif page == "Global Insights":
     st.title("🌍 Global Insights")
-    st.header("Global Developer Distribution and Salaries")
-
+    # ... (rest of the code for this page) ...
     df = st.session_state.df
     country_stats = df.groupby('Country').agg(
         RespondentCount=('ResponseId', 'count'),
