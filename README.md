@@ -2,9 +2,9 @@
 
 An interactive web application built with Streamlit to analyze and visualize insights from the Stack Overflow Developer Survey 2023. This tool allows users to explore trends in technology, career development, and global developer demographics.
 
-<!-- [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://your-streamlit-app-url.streamlit.app)  
-![App Screenshot](https://i.imgur.com/your-screenshot-url.png)
--- >
+<!--[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://your-streamlit-app-url.streamlit.app)  -->
+<!--
+![App Screenshot](https://i.imgur.com/your-screenshot-url.png) -->
  
 ## 🚀 Features
 
