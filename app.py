@@ -18,7 +18,10 @@ st.set_page_config(
 def load_data(file_path):
     """Loads and cleans the Stack Overflow survey data."""
     try:
-        df = pd.read_csv(file_path, low_memory=False)
+        # THE CRITICAL FIX: Specify the separator as a tab ('\t')
+        df = pd.read_csv(file_path, sep='\t', low_memory=False)
+        
+        # The rest of the cleaning logic
         df = df.rename(columns={'YearsCodePro': 'YearsCode'})
         df['ConvertedCompYearly'] = pd.to_numeric(df['ConvertedCompYearly'], errors='coerce')
         df['YearsCode'] = pd.to_numeric(df['YearsCode'], errors='coerce')
@@ -45,9 +48,10 @@ with st.sidebar:
     st.write("Analyze trends from the Industry Survey Data.")
     
     st.header("1. Load Data")
-    st.write("Upload a CSV or use the sample survey data.")
+    st.write("Upload a CSV/TSV or use the sample survey data.")
     
-    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+    # The uploader will still work because it passes the file object, not the name
+    uploaded_file = st.file_uploader("Choose a file", type=["csv", "tsv", "txt"])
     if uploaded_file is not None:
         df = load_data(uploaded_file)
         if df is not None:
@@ -55,8 +59,8 @@ with st.sidebar:
             st.success("File processed successfully!")
 
     if st.button("Load Sample Survey Data"):
-        # THIS IS THE CORRECTED LINE
-        sample_data_path = Path(__file__).parent / "Industry_Survey_Data.csv"
+        # This line uses your specific filename
+        sample_data_path = Path(__file__).parent / "Industry_Survey_Data.csv" 
         
         df = load_data(sample_data_path)
         if df is not None:
@@ -87,7 +91,8 @@ elif st.session_state.df is None:
 
 elif page == "Data Explorer":
     st.title("📊 Data Explorer")
-    # ... (rest of the code for this page) ...
+    st.header("Explore and Filter the Dataset")
+    
     df = st.session_state.df.copy()
     
     filter_container = st.container()
@@ -114,7 +119,8 @@ elif page == "Data Explorer":
 
 elif page == "Technology Analysis":
     st.title("📈 Technology Analysis")
-    # ... (rest of the code for this page) ...
+    st.header("Most Popular Technologies")
+    
     df = st.session_state.df
     if 'LanguageHaveWorkedWith' in df.columns:
         tech_counts = df['LanguageHaveWorkedWith'].str.split(';', expand=True).stack().value_counts()
@@ -128,7 +134,8 @@ elif page == "Technology Analysis":
 
 elif page == "Career Analysis":
     st.title("📉 Career Analysis")
-    # ... (rest of the code for this page) ...
+    st.header("Experience vs. Compensation")
+    
     df = st.session_state.df
     df_filtered = df[(df['ConvertedCompYearly'] < 400000) & (df['ConvertedCompYearly'] > 1000)]
     df_filtered = df_filtered[df_filtered['YearsCode'] <= 40]
@@ -140,7 +147,8 @@ elif page == "Career Analysis":
 
 elif page == "Global Insights":
     st.title("🌍 Global Insights")
-    # ... (rest of the code for this page) ...
+    st.header("Global Developer Distribution and Salaries")
+
     df = st.session_state.df
     country_stats = df.groupby('Country').agg(
         RespondentCount=('ResponseId', 'count'),
