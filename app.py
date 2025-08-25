@@ -106,12 +106,15 @@
 #         fig = px.choropleth(country_stats, locations="iso_alpha", color="RespondentCount", hover_name="Country", color_continuous_scale=px.colors.sequential.Viridis, title="Global Distribution of Survey Respondents")
 #     st.plotly_chart(fig, use_container_width=True)
 
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 from pathlib import Path
 from pycountry_convert import country_name_to_country_alpha3
+
+# --- THE ONLY FILENAME THE APP WILL EVER USE ---
+# Your CSV file in the folder MUST be named exactly "data.csv"
+DATA_FILENAME = "data.csv"
 
 # --- PAGE CONFIGURATION ---
 st.set_page_config(
@@ -124,7 +127,7 @@ st.set_page_config(
 # --- HELPER FUNCTIONS ---
 @st.cache_data
 def load_data(file_path):
-    """Loads the clean, pre-processed IT Industry CSV file."""
+    """Loads the clean, pre-processed CSV file."""
     try:
         df = pd.read_csv(file_path)
         # Rename columns for consistency in our app
@@ -137,7 +140,7 @@ def load_data(file_path):
         df = df.dropna(subset=['ConvertedCompYearly', 'YearsCode', 'Country', 'LanguageHaveWorkedWith', 'DevType'])
         return df
     except FileNotFoundError:
-        st.error(f"FATAL ERROR: The data file was not found. Please make sure the file named 'IT_Industry_Data.csv' is in the same folder as your app.py script.")
+        st.error(f"FATAL ERROR: The data file was not found. Please make sure the file named '{DATA_FILENAME}' is in the same folder as your app.py script.")
         return None
     except Exception as e:
         st.error(f"An unexpected error occurred while processing the data: {e}")
@@ -165,10 +168,8 @@ with st.sidebar:
     
     st.header("Load Data")
     
-    # Simplified to one button to eliminate all other sources of error
     if st.button("Load Survey Data"):
-        # This filename is now hardcoded to match YOUR specific filename
-        sample_data_path = Path(__file__).parent / "IT_Industry_Data.csv"
+        sample_data_path = Path(__file__).parent / DATA_FILENAME
         
         df = load_data(sample_data_path)
         if df is not None:
@@ -202,7 +203,6 @@ elif page == "Data Explorer":
     
     df_explorer = st.session_state.df.copy()
 
-    # ADDED FEATURE: Search by Employee Name
     st.subheader("Search by Employee Name")
     search_name = st.text_input("Enter a name to search for:")
     
@@ -225,9 +225,10 @@ elif page == "Career Analysis":
     st.title("📉 Career Analysis")
     st.header("Experience vs. Compensation")
     df = st.session_state.df
-    # Filter for better visualization
+
     df_filtered = df[(df['ConvertedCompYearly'] < 400000) & (df['ConvertedCompYearly'] > 1000)]
     df_filtered = df_filtered[pd.to_numeric(df_filtered['YearsCode'], errors='coerce') <= 40]
+    
     fig_scatter = px.scatter(df_filtered, x='YearsCode', y='ConvertedCompYearly', color='DevType',
                              hover_name='EmployeeName', title='Salary vs. Years of Professional Coding Experience',
                              labels={'YearsCode': 'Years of Professional Coding Experience', 'ConvertedCompYearly': 'Annual Salary (USD)'})
@@ -243,7 +244,9 @@ elif page == "Global Insights":
     ).reset_index()
     country_stats['iso_alpha'] = country_stats['Country'].apply(get_iso_alpha3)
     country_stats = country_stats.dropna(subset=['iso_alpha'])
+    
     map_type = st.selectbox("Select Map to Display", ["Median Annual Salary (USD)", "Number of Survey Respondents"])
+    
     if map_type == "Median Annual Salary (USD)":
         fig = px.choropleth(country_stats, locations="iso_alpha", color="MedianSalary",
                             hover_name="Country", color_continuous_scale=px.colors.sequential.Plasma,
@@ -253,8 +256,3 @@ elif page == "Global Insights":
                             hover_name="Country", color_continuous_scale=px.colors.sequential.Viridis,
                             title="Global Distribution of Survey Respondents")
     st.plotly_chart(fig, use_container_width=True)
-
-
-
-
-
